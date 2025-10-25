@@ -83,6 +83,10 @@
   <div id="odev-container"></div>
 
   <script type="module">
+    console.log(sessionStorage.getItem("hesap"))
+    if (sessionStorage.getItem("hesap") == null) {
+      window.location.replace("index.html")
+    }
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
     import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js"; 
 
@@ -128,9 +132,12 @@
       
       odevContainer.appendChild(kutu);
     }
-
-    const kullanicibilgileri = await get(ref(db, sessionStorage.getItem("hesap")));
-    document.getElementById("loggedacc").innerHTML = sessionStorage.getItem("hesap");
-    document.getElementById("profilpicture").src = kullanicibilgileri.val().profilePhoto
+    try{ 
+      const kullanicibilgileri = await get(ref(db, sessionStorage.getItem("hesap")));
+      document.getElementById("loggedacc").innerHTML = sessionStorage.getItem("hesap");
+      document.getElementById("profilpicture").src = kullanicibilgileri.val().profilePhoto
+    }catch {
+      window.location.replace("index.html")
+    }
   </script>
 </body>
