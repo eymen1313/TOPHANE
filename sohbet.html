@@ -10,7 +10,7 @@
       min-height: 100vh;
     }
 
-    a {
+    #asagiin {
       text-align: center;
       display: block;
       padding: 10px;
@@ -119,7 +119,7 @@
 </head>
 
 <body>
-  <!--<a href="odevler.html">Burası şu anda test aşamasında. Geri dönmek için bas.</a>-->
+  <button id="scrollBtn">En aşağıya inmek için bas.</button>
 
   <div id="mesajlar"></div>
 
@@ -132,42 +132,42 @@
   </div>
 
   <script type="module">
-  import { 
-    initializeApp 
-  } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-  import { 
-    getDatabase, ref, get, set, update, onValue 
-  } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js"; 
+import { 
+  initializeApp 
+} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+import { 
+  getDatabase, ref, get, update, onValue 
+} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js"; 
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDPV6XkrS1QUkrozT1r5t0Vgk7MIc_vYAc",
-    authDomain: "hesaplar-e49af.firebaseapp.com",
-    databaseURL: "https://hesaplar-e49af-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "hesaplar-e49af",
-    storageBucket: "hesaplar-e49af.firebasestorage.app",
-    messagingSenderId: "265572909649",
-    appId: "1:265572909649:web:2a5f5fe0d4d86da57d6e70",
-    measurementId: "G-XLL1L4FP5B"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyDPV6XkrS1QUkrozT1r5t0Vgk7MIc_vYAc",
+  authDomain: "hesaplar-e49af.firebaseapp.com",
+  databaseURL: "https://hesaplar-e49af-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "hesaplar-e49af",
+  storageBucket: "hesaplar-e49af.firebasestorage.app",
+  messagingSenderId: "265572909649",
+  appId: "1:265572909649:web:2a5f5fe0d4d86da57d6e70",
+  measurementId: "G-XLL1L4FP5B"
+};
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-  const mesajlarDiv = document.getElementById("mesajlar");
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const mesajlarDiv = document.getElementById("mesajlar");
 
-  async function loadMessages() {
-    mesajlarDiv.innerHTML = ""; // önce temizle
-    const snapshot = await get(ref(db, "chat"));
-    const data = snapshot.val();
-    const okuncakmesaj = data.mesajsayisi;
+let lastMessageCount = 0;
 
-    for (let i = 0; i < okuncakmesaj; i++) {
-      if (!data[i]) continue;
-      const parcalar = data[i].split("½");
-      const mesajText = parcalar[0];
-      const playerwhotext = parcalar[1];
-      const tarihText = parcalar[2] || "";
+onValue(ref(db, "chat"), (snapshot) => {
+  const data = snapshot.val();
+  const okuncakmesaj = data.mesajsayisi;
 
-      const player = await get(ref(db, playerwhotext));
+  for (let i = lastMessageCount; i < okuncakmesaj; i++) {
+    if (!data[i]) continue;
+    const parcalar = data[i].split("½");
+    const mesajText = parcalar[0];
+    const playerwhotext = parcalar[1];
+    const tarihText = parcalar[2] || "";
+
+    get(ref(db, playerwhotext)).then((player) => {
       const playerData = player.val();
 
       const container = document.createElement("div");
@@ -191,44 +191,47 @@
 
       container.append(profil, username, kutu, tarih);
       mesajlarDiv.appendChild(container);
-    }
+
+      window.scrollTo(0,document.documentElement.scrollHeight || document.body.scrollHeight)
+    });
   }
 
-  // Otomatik yenileme (canlı dinleme)
-  onValue(ref(db, "chat"), () => {
-    loadMessages();
+  lastMessageCount = okuncakmesaj;
+});
+
+// MESAJ GÖNDERME
+document.getElementById("gonderBtn2").addEventListener("click", async () => {
+  window.location.replace("odevler.html")
+});
+
+document.getElementById("gonderBtn").addEventListener("click", async () => {
+  let _mesaj_ = document.getElementById("mesajInput").value.trim();
+  if (_mesaj_ === "") return;
+
+  document.getElementById("mesajInput").value = "";
+
+  const snapshot = await get(ref(db, "chat"));
+  const data = snapshot.val();
+  const siradaki = data.mesajsayisi; 
+  const yeniMesajSayisi = siradaki + 1;
+
+  let _kullaniciAdi_ = sessionStorage.getItem("hesap")
+  let _tarih_ = new Date().toLocaleString("tr-TR");
+
+  const mesajData = `${_mesaj_}½${_kullaniciAdi_}½${_tarih_}`;
+
+  await update(ref(db, "chat"), {
+    [siradaki]: mesajData,
+    mesajsayisi: yeniMesajSayisi
   });
+});
 
-  // MESAJ GÖNDERME
-  document.getElementById("gonderBtn2").addEventListener("click", async () => {
-    window.location.replace("odevler.html")
-  });
-  
-  document.getElementById("gonderBtn").addEventListener("click", async () => {
-    const _mesaj = document.getElementById("mesajInput").value.trim();
-    if (_mesaj === "") return;
+const _mesajlarDiv = document.getElementById("mesajlar");
 
-    document.getElementById("mesajInput").value = "";
+document.getElementById("scrollBtn").addEventListener("click", () => {
+    
+    window.scrollTo(0,document.documentElement.scrollHeight || document.body.scrollHeight)
+});
 
-    const snapshot = await get(ref(db, "chat"));
-    const data = snapshot.val();
-    const siradaki = data.mesajsayisi; // mevcut sayaç
-    const yeniMesajSayisi = siradaki + 1;
-
-    const _kullaniciAdi = sessionStorage.getItem("hesap")
-    const _tarih = new Date().toLocaleString("tr-TR");
-
-    // Yeni mesaj verisini oluştur
-    const mesajData = `${_mesaj}½${_kullaniciAdi}½${_tarih}`;
-
-    // Mesajı veritabanına ekle
-    await update(ref(db, "chat"), {
-      [siradaki]: mesajData,
-      mesajsayisi: yeniMesajSayisi
-    });
-  });
-
-  // İlk yükleme
-  
 </script>
 </body>
