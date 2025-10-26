@@ -201,7 +201,6 @@
 
   // MESAJ GÖNDERME
   document.getElementById("gonderBtn2").addEventListener("click", async () => {
-    
     window.location.replace("odevler.html")
   });
   
@@ -216,7 +215,7 @@
     const siradaki = data.mesajsayisi; // mevcut sayaç
     const yeniMesajSayisi = siradaki + 1;
 
-    const _kullaniciAdi = "Eymen"; // burayı giriş yapan kullanıcının adıyla değiştir
+    const _kullaniciAdi = sessionStorage.getItem("hesap")
     const _tarih = new Date().toLocaleString("tr-TR");
 
     // Yeni mesaj verisini oluştur
