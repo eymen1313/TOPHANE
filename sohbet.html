@@ -1,0 +1,241 @@
+<head>
+  <style>
+    body {
+      background-color: #f4f4f4;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    #asagiin {
+      text-align: center;
+      display: block;
+      padding: 10px;
+      background: #ddd;
+      text-decoration: none;
+      color: #333;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .mesaj-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 15px auto;
+      max-width: 900px;
+      flex-wrap: wrap;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 15px;
+    }
+
+    .mesajbox {
+      flex: 1;
+      border-radius: 10px;
+      padding: 15px;
+      font-size: 22px;
+      text-align: center;
+      color: #222;
+      background-color: #fafafa;
+      margin: 10px;
+    }
+
+    .profil-img {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #ffffff00;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .profil-img:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 15px rgba(255,255,255,0.5);
+    }
+
+    .username {
+      font-weight: bold;
+      font-size: 20px;
+      color: #333;
+      margin: 10px;
+    }
+
+    .tarih {
+      font-size: 16px;
+      color: #777;
+      margin: 10px;
+    }
+
+    /* ALT MESAJ GİRİŞ ALANI */
+    .mesaj-giris {
+      margin-top: auto;
+      background: #fff;
+      border-top: 1px solid #ccc;
+      padding: 15px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      position: sticky;
+      bottom: 0;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+    }
+
+    .mesaj-giris input {
+      width: 70%;
+      padding: 12px 15px;
+      font-size: 18px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .mesaj-giris input:focus {
+      border-color: #4a90e2;
+    }
+
+    .mesaj-giris button {
+      padding: 12px 25px;
+      font-size: 18px;
+      border: none;
+      border-radius: 8px;
+      background-color: #4a90e2;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .mesaj-giris button:hover {
+      background-color: #357ac8;
+    }
+  </style>
+</head>
+
+<body>
+  <button id="scrollBtn">En aşağıya inmek için bas.</button>
+
+  <div id="mesajlar"></div>
+
+  <!-- Alt kısım (mesaj yazma alanı) -->
+  <div class="mesaj-giris">
+    <button id="gonderBtn2">geri</button>
+    <input type="text" id="mesajInput" placeholder="Mesajınızı yazın..." />
+    <button id="gonderBtn">Gönder</button>
+    
+  </div>
+
+  <script type="module">
+    if (sessionStorage.getItem("hesap") == null) {
+      //console.log("BABA HESPA YOK ORSOPUC GU")
+      window.location.replace("index.html")
+    }
+import { 
+  initializeApp 
+} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+import { 
+  getDatabase, ref, get, update, onValue 
+} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js"; 
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDPV6XkrS1QUkrozT1r5t0Vgk7MIc_vYAc",
+  authDomain: "hesaplar-e49af.firebaseapp.com",
+  databaseURL: "https://hesaplar-e49af-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "hesaplar-e49af",
+  storageBucket: "hesaplar-e49af.firebasestorage.app",
+  messagingSenderId: "265572909649",
+  appId: "1:265572909649:web:2a5f5fe0d4d86da57d6e70",
+  measurementId: "G-XLL1L4FP5B"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const mesajlarDiv = document.getElementById("mesajlar");
+
+let lastMessageCount = 0;
+
+onValue(ref(db, "chat"), (snapshot) => {
+  const data = snapshot.val();
+  const okuncakmesaj = data.mesajsayisi;
+
+  for (let i = lastMessageCount; i < okuncakmesaj; i++) {
+    if (!data[i]) continue;
+    const parcalar = data[i].split("½");
+    const mesajText = parcalar[0];
+    const playerwhotext = parcalar[1];
+    const tarihText = parcalar[2] || "";
+
+    get(ref(db, playerwhotext)).then((player) => {
+      const playerData = player.val();
+
+      const container = document.createElement("div");
+      container.className = "mesaj-container";
+
+      const username = document.createElement("div");
+      username.className = "username";
+      username.textContent = playerwhotext;
+
+      const kutu = document.createElement("div");
+      kutu.className = "mesajbox";
+      kutu.textContent = mesajText;
+
+      const profil = document.createElement("img");
+      profil.className = "profil-img";
+      profil.src = playerData?.profilePhoto || "https://via.placeholder.com/80";
+
+      const tarih = document.createElement("div");
+      tarih.className = "tarih";
+      tarih.textContent = tarihText;
+
+      container.append(profil, username, kutu, tarih);
+      mesajlarDiv.appendChild(container);
+
+      window.scrollTo(0,document.documentElement.scrollHeight || document.body.scrollHeight)
+    });
+  }
+
+  lastMessageCount = okuncakmesaj;
+});
+
+// MESAJ GÖNDERME
+document.getElementById("gonderBtn2").addEventListener("click", async () => {
+  window.location.replace("odevler.html")
+});
+
+document.getElementById("gonderBtn").addEventListener("click", async () => {
+  let _mesaj_ = document.getElementById("mesajInput").value.trim();
+  if (_mesaj_ === "") return;
+
+  document.getElementById("mesajInput").value = "";
+
+  const snapshot = await get(ref(db, "chat"));
+  const data = snapshot.val();
+  const siradaki = data.mesajsayisi; 
+  const yeniMesajSayisi = siradaki + 1;
+
+  let _kullaniciAdi_ = sessionStorage.getItem("hesap")
+  let _tarih_ = new Date().toLocaleString("tr-TR");
+
+  const mesajData = `${_mesaj_}½${_kullaniciAdi_}½${_tarih_}`;
+
+  await update(ref(db, "chat"), {
+    [siradaki]: mesajData,
+    mesajsayisi: yeniMesajSayisi
+  });
+});
+
+const _mesajlarDiv = document.getElementById("mesajlar");
+
+document.getElementById("scrollBtn").addEventListener("click", () => {
+    
+    window.scrollTo(0,document.documentElement.scrollHeight || document.body.scrollHeight)
+});
+
+</script>
+</body>
