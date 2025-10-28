@@ -1,0 +1,110 @@
+<head>
+  <title>AdminPaneli</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      font-family: Arial, sans-serif;
+    }
+    #donbuton {position: absolute; margin-top: 0px;}
+    #duyuruTXT { margin-top: 20px; }
+    #Tur { position: absolute; margin-top: 80px; }
+    #Ders_ { position: absolute; margin-top: 120px; }
+    #icerik_ { position: absolute; margin-top: 140px; }
+    #kaydetbuton { position: absolute; margin-top: 180px; }
+    #kaldirTXT { position: absolute; margin-top: 280px; }
+    #kaldirilcaksec { position: absolute; margin-top: 340px; }
+    #silbuton { position: absolute; margin-top: 380px; }
+  </style>
+</head>
+<body>
+    <a id="donbuton" href="odevler.html"> Başa dön </a>
+  <h1 id="duyuruTXT">Duyuru Paylaş:</h1>
+  <select id="Tur" onchange="deisti()" name="Tur">
+    <option value="Odev">Odev</option>
+    <option value="Duyuru">Duyuru</option>
+  </select>
+  <input placeholder="Ders" id="Ders_">
+  <input placeholder="İçerik" id="icerik_">
+  <button id="kaydetbuton" onclick="kaydet()">Kaydet</button>
+
+  <h1 id="kaldirTXT">Duyuru Kaldır:</h1>
+  <select id="kaldirilcaksec"></select>
+  <button id="silbuton">Sil</button>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getDatabase, ref, get, set, push } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDPV6XkrS1QUkrozT1r5t0Vgk7MIc_vYAc",
+      authDomain: "hesaplar-e49af.firebaseapp.com",
+      databaseURL: "https://hesaplar-e49af-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "hesaplar-e49af",
+      storageBucket: "hesaplar-e49af.appspot.com",
+      messagingSenderId: "265572909649",
+      appId: "1:265572909649:web:2a5f5fe0d4d86da57d6e70",
+      measurementId: "G-XLL1L4FP5B"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    async function loadData() {
+      const snapshot = await get(ref(db, "odevler"));
+      const data = snapshot.val();
+      if (!data) return;
+      const select = document.getElementById("kaldirilcaksec");
+      select.innerHTML = "";
+      for (let key in data) {
+        const option = document.createElement("option");
+        option.value = key;
+        option.textContent = key;
+        select.appendChild(option);
+      }
+    }
+
+    loadData();
+
+    window.kaydet = async function() {
+      const ders = document.getElementById("Ders_").value;
+      const icerik = document.getElementById("icerik_").value;
+
+      await set(ref(db, "odevler"), {
+
+      
+        [ders]:"odev:" + icerik + ":eymen:" + new Date().toLocaleString("tr-TR")
+        
+      });
+      
+      loadData();
+    }
+
+    window.deisti = function() {
+      const X = document.getElementById("Tur").value;
+      if (X == "Odev") {
+        document.getElementById("Ders_").style.opacity = "1";
+        document.getElementById("Ders_").style.marginTop = "120px";
+        document.getElementById("icerik_").style.marginTop = "140px";
+      } else if (X == "Duyuru") {
+        document.getElementById("Ders_").style.opacity = "0";
+        document.getElementById("Ders_").style.marginTop = "190px";
+        document.getElementById("icerik_").style.marginTop = "120px";
+      }
+    }
+    try {
+        const kullanicibilgileri = await get(ref(db, sessionStorage.getItem("hesap")));
+        if (kullanicibilgileri.val().yetki == "kurucu" || kullanicibilgileri.val().yetki == "Yönetici") {
+
+        }else {
+            window.location.replace("index.html")
+        }
+    }catch {
+        window.location.replace("index.html")
+    }
+  </script>
+</body>

@@ -1,0 +1,30 @@
+<body>
+    <h1>
+        BURDA HENÜZ BİRŞEY YOK!
+    </h1>
+    <a href="odevler.html"> geri dön</a>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+        import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js"; 
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDPV6XkrS1QUkrozT1r5t0Vgk7MIc_vYAc",
+            authDomain: "hesaplar-e49af.firebaseapp.com",
+            databaseURL: "https://hesaplar-e49af-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "hesaplar-e49af",
+            storageBucket: "hesaplar-e49af.firebasestorage.app",
+            messagingSenderId: "265572909649",
+            appId: "1:265572909649:web:2a5f5fe0d4d86da57d6e70",
+            measurementId: "G-XLL1L4FP5B"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        let tumelemanlar = await get(ref(db));
+        tumelemanlar = tumelemanlar.val()
+        let uzunluk = Object.keys(tumelemanlar).length
+        //console.log(uzunluk)
+
+    </script>
+</body>
